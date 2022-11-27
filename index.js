@@ -20,8 +20,8 @@ async function run(){
     try{
         const CategoriesCollection = client.db("luxuriousLumber").collection("Categories");
         const productsCollection = client.db("luxuriousLumber").collection("products");
-
         const usersCollection = client.db("luxuriousLumber").collection("users");
+        const bookingsCollection = client.db("luxuriousLumber").collection("bookings");
 
         app.get('/categories',async(req,res)=>{
             const query ={};
@@ -46,6 +46,13 @@ async function run(){
             res.send(products)
         })
 
+        app.get('/products/:category', async(req,res)=>{
+            const category = req.params.category;
+            const query = {category:category}
+            const products = await productsCollection.find(query).toArray()
+            res.send(products)
+        })
+
         app.post('/products', async(req,res)=>{
             const product = req.body;
             const result = await productsCollection.insertOne(product);
@@ -55,6 +62,29 @@ async function run(){
             const user = req.body;
             const result = await usersCollection.insertOne(user);
             res.send(user)
+        })
+
+        app.get('/bookings', async(req,res)=>{
+            const query = {};
+            const bookings = await bookingsCollection.find(query).toArray();
+            res.send(bookings)
+        })
+
+        app.post('/bookings', async(req,res)=>{
+            const booking = req.body;
+            // const query = {
+            //     title:booking.title,
+            // }
+
+            // const alreadyBooked = await bookingsCollection.find(query).toArray();
+            // if(alreadyBooked.length){
+            //     const message = ` You already have a booked ${booking.title} item.`
+            //     return res.send({acknowledge:false, message})
+            // }
+
+            const result = await bookingsCollection.insertOne(booking);
+            res.send(result);
+
         })
 
         
