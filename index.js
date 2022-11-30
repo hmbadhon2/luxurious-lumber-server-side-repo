@@ -24,6 +24,7 @@ async function run(){
         const usersCollection = client.db("luxuriousLumber").collection("users");
         const bookingsCollection = client.db("luxuriousLumber").collection("bookings");
         const paymentsCollection = client.db("luxuriousLumber").collection("payments");
+       const featuresCollection = client.db("luxuriousLumber").collection("features");
 
         app.get('/categories',async(req,res)=>{
             const query ={};
@@ -40,6 +41,13 @@ async function run(){
             const query = {}
             const users = await usersCollection.find(query).toArray();
             res.send(users)
+        })
+
+        app.delete('/users/:id', async(req,res)=>{
+            const id = req.params.id;
+            const filter = {_id:ObjectId(id)}
+            const result = await usersCollection.deleteOne(filter);
+            res.send(result)
         })
 
         app.get('/user/buyer/:email',async(req,res)=>{
@@ -69,6 +77,19 @@ async function run(){
             res.send(allSellers)
           
         })
+
+        app.put('/allSeller/:id', async(req,res)=>{
+            const id = req.params.id;
+            const filter = {_id:ObjectId(id)}
+            const updatedDoc ={
+                $set:{
+                    role:'verified'
+                }
+            }
+            const result = await usersCollection.updateOne(filter,updatedDoc);
+            res.send(result);
+        })
+
         app.get('/allBuyers', async(req,res)=>{
             const accType = req.params.accType;
             const query = {accType:'Buyer'};
@@ -102,8 +123,9 @@ async function run(){
         })
 
         app.get('/bookings', async(req,res)=>{
-            const email = req.params.email;
-            const query = {email:email};
+            const email = req.query.email;
+            console.log(email)
+            const query = {email};
             const bookings = await bookingsCollection.find(query).toArray();
             res.send(bookings)
         })
@@ -145,14 +167,22 @@ async function run(){
         const result = await paymentsCollection.insertOne(payment)
         const id =payment.bookingId
         const filter = {_id:ObjectId(id)}
+        const options = {upsert:true}
         const updatedDoc={
             $set:{
                     paid:true
             }
         }
-       const updatedResult = await bookingsCollection.updateOne(filter,updatedDoc)
+       const updatedResult = await bookingsCollection.updateOne(filter,updatedDoc,options)
+        console.log('updatedResult',updatedResult)
+    
+    const updatedProduct = await productsCollection.updateOne( filter,updatedDoc,options);
+    console.log('updatedProduct', updatedProduct)
+        
+     
         res.send(result)
-       })    
+       }) 
+      
     }
     finally{
 
